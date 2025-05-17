@@ -42,7 +42,7 @@ FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
 FPS = 20
 LOCAL_CLIP_PATH = 'clips'
-RASPBERRY_PI_IP = ''
+RASPBERRY_PI_IP = '192.168.68.65 100.75.45.21'
 PORT = 5555
 
 os.makedirs(LOCAL_CLIP_PATH, exist_ok=True)
@@ -53,7 +53,7 @@ socket = context.socket(zmq.PUSH)
 socket.connect(f"tcp://{RASPBERRY_PI_IP}:{PORT}")
 
 def record_clip(cap, filename):
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(filename, fourcc, FPS, (FRAME_WIDTH, FRAME_HEIGHT))
 
     start_time = time.time()
@@ -67,8 +67,8 @@ def record_clip(cap, filename):
 def send_clip_zmq(filepath):
     with open(filepath, "rb") as f:
         encoded = base64.b64encode(f.read())    # base64 encoding -> safer transmission
-        socket.send(encoded)
-        print(f"Sent clip {os.path.basename(filepath)} to Raspberry PI")
+        socket.send_multipart([filepath.encode(), encoded])
+        print(f"Sent clip {os.path.basename(filepath)} to Raspberry Pi")
 
 def main():
     cap = cv2.VideoCapture(0)
@@ -95,7 +95,7 @@ def main():
 
         if motion_detected:
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = os.path.join(LOCAL_CLIP_PATH, f"motion_{timestamp}.avi")
+            filename = os.path.join(LOCAL_CLIP_PATH, f"motion_{timestamp}.mp4")
             print(f"[{timestamp}] Motion detected! Saving to {filename}")
             record_clip(cap, filename)
             send_clip_zmq(filename)     # send file to PI
