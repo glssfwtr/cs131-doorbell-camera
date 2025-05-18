@@ -4,7 +4,7 @@ import datetime
 
 context = zmq.Context()
 socket = context.socket(zmq.PULL)
-socket.bind("tcp://*:5555")
+socket.bind("tcp://0.0.0.0:5555")
 
 def save_clip(data, filename):
     with open(filename, "wb") as f:
