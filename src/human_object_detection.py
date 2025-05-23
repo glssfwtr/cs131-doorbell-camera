@@ -27,6 +27,10 @@ import time
 from pathlib import Path
 from ultralytics import YOLO
 
+
+model = torch.hub.load('ultralytics/yolov5', 'yolov5n', verbose=False)
+
+
 # load dir pathing
 base_dir = Path.home()
 good_dir = base_dir / 'good'
