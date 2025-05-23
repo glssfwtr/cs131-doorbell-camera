@@ -24,6 +24,7 @@ import cv2
 import os
 import shutil
 import time
+import torch
 from pathlib import Path
 from ultralytics import YOLO
 
