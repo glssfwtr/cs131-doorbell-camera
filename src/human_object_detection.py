@@ -12,7 +12,6 @@ from ultralytics import YOLO
 
 model = torch.hub.load('ultralytics/yolov5', 'yolov5n', verbose=False)
 
-
 # load dir pathing
 base_dir = Path.home()
 good_dir = base_dir / 'good'
@@ -31,8 +30,9 @@ GOOD_DIR = Path(good_dir)
 BAD_DIR = Path(bad_dir)
 MODEL_PATH = Path("model=/home/immortal/yolov5/yolov5nu.pt").expanduser()
 PERSON_CLASS = 0 # COCO class ID for "person"
-CONF_THRESH = 0.5 # confidence threshold
-FRAME_SKIP = 5 # only run detection every n frames
+CONF_THRESH = 0.3 # confidence threshold
+FRAME_SKIP = 7 # only run detection every n frames
+INPUT_SIZE = 416
 
 VIDEO_EXTENSIONS = ['*.avi', '*.flv', '*.mkv', '*.mov', '*.mp4', '*.wmv',]
 
