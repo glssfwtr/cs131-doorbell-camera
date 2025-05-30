@@ -80,6 +80,8 @@ def main():
 
     print("Motion detection started...")
 
+    last_recorded_time = 0  # Epoch seconds
+
     try:
         while True:
             ret, frame = cap.read()
@@ -95,13 +97,14 @@ def main():
             thresh = cv2.threshold(delta, 25, 255, cv2.THRESH_BINARY)[1]
             motion_detected = cv2.countNonZero(thresh) > MOTION_THRESHOLD
 
-            if motion_detected:
+            now = time.time()
+            if motion_detected and (now - last_recorded_time >= 10):
                 timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
                 filename = os.path.join(LOCAL_CLIP_PATH, f"motion_{timestamp}.mp4")
                 print(f"[{timestamp}] Motion detected — recording to {filename}")
                 record_clip(cap, filename, list(frame_buffer))
                 send_clip_zmq(filename)
-                time.sleep(1)
+                last_recorded_time = now  # Update last recording time
 
             prev_frame = gray
 
