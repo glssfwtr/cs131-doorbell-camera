@@ -55,7 +55,7 @@ def send_clip_zmq(filepath):
 
 def save_clip(filename, before_buffer, after_buffer):
 
-    fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(filename, fourcc, FPS, (FRAME_WIDTH, FRAME_HEIGHT))
     
     for frame in before_buffer:
