@@ -29,7 +29,7 @@ VIDEO_AFTER = 20   # seconds of video after motion
 LOCAL_CLIP_PATH = 'clips'
 FRAME_WIDTH = 1280
 FRAME_HEIGHT = 720
-FPS = 24
+FPS = 15
 MOTION_THRESHOLD = 5000  # number of changed pixels to trigger motion
 MAX_FRAMES = VIDEO_BUFFER * FPS
 
