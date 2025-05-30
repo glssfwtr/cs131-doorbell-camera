@@ -71,7 +71,7 @@ def record_clip(cap, filename, frame_buffer):
     start_time = time.time()
     before_buffer = deque(frame_buffer)
 
-    while len(after_buffer) <= FPS * VIDEO_AFTER :
+    while len(after_buffer) < FPS * VIDEO_AFTER :
         ret, frame = cap.read()
         if not ret:
             break
