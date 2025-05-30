@@ -1,5 +1,7 @@
 # source .venv/bin/activate
 
+# pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib python-dotenv
+
 import cv2
 import os
 import shutil

@@ -1,6 +1,9 @@
-import zmq
 import base64
 import datetime
+import os
+import zmq
+
+incoming_dir = "/home/immortal/"
 
 context = zmq.Context()
 socket = context.socket(zmq.PULL)
@@ -21,12 +24,12 @@ def detect_person(filename):
     return run_inference(filename)  # your detection function
 
 while True:
-    filename_bytes, clip_data = socket.recv_multipart()
-    filename = filename_bytes.decode()
-    save_clip(clip_data, filename)
+    filename, encoded_data = socket.recv_multipart()
+    filename = filename.decode()
+    decoded_data = base64.b64decode(encoded_data)
 
-    if run_inference(filename):
-        print(f"Person detected in {filename}, saving/forwarding")
-        # TODO: Save to disk permanently or forward to backend
-    else:
-        print(f"No person detected in {filename}, discarding")
+    save_path = os.path.join(incoming_dir, filename)
+    with open(save_path, "wb") as f:
+        f.write(decoded_data)
+
+    print(f"Saved to: {save_path}")
