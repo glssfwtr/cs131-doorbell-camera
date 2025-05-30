@@ -47,7 +47,7 @@ def send_email_notification(subject, body):
         server.send_message(msg)
         server.quit()
         print(f"Notification sent to {EMAIL_RECEIVER}")
-    
+
     except Exception as e:
         print(f"Email failed: {e}")
 
@@ -59,7 +59,7 @@ def upload_video(file_path):
 
     file_name = os.path.basename(file_path)
     file_metadata = {'name': file_name, 'parents': [FOLDER_ID]}
-    media = MediaFileUpload(file_path, mimetype='video/mp4')
+    media = MediaFileUpload(file_path, mimetype='video/mp4', resumable=True)
 
     uploaded_file = service.files().create(
         body=file_metadata,
