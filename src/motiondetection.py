@@ -104,6 +104,7 @@ def main():
                 print(f"[{timestamp}] Motion detected — recording to {filename}")
                 record_clip(cap, filename, list(frame_buffer))
                 send_clip_zmq(filename)
+                frame_buffer.clear()
                 last_recorded_time = now  # Update last recording time
 
             prev_frame = gray
