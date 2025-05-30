@@ -1,22 +1,3 @@
-"""
-objectdetection.py
-
-This script will run on Jetson#2 and is responsible for performing object detection
-on short video clips received from Jetson #1. Jetson #1 performed lightweight motion
-detection and sends clips when motion is detected. Jetson #2 then analyzes these clips
-using a YOLO model and if relevant objects are detected then the clip is uploaded to
-a cloud storage service such as google drive. An email will also be sent to the user
-notifying them to check their cloud drive.
-
-Libraries:
-OpenCV (cv2)
-os, subprocess (for automation and file handling)
-rclone (for cloud uploading)
-smtplib/email (for sending email notifications)
-
-Authors: Angel Franco
-Date: May 8th, 2025
-"""
 # source .venv/bin/activate
 
 #!/usr/bin/env python3
@@ -61,7 +42,7 @@ for d in (GOOD_DIR, BAD_DIR, INCOMING_DIR):
 model = YOLO(str(MODEL_PATH))
 model.fuse() # fuse Conv + BN for speed on CPU
 
-def process_video(video_path: Path):
+def ProcessVideo(video_path: Path):
   """Returns True if a person is detected, else False."""
   cap = cv2.VideoCapture(str(video_path))
   frame_id = 0
@@ -72,9 +53,9 @@ def process_video(video_path: Path):
     if not ret:
       break
 
-    # skip frames for faste procecssing
+    # skip frames for faster procecssing
     if frame_id % FRAME_SKIP == 0:
-      # YOLOv5 expects BGR → RGB
+      # YOLOv5 expects BGR -> RGB
       results = model.predict(frame[..., ::-1], conf=CONF_THRESH, classes=[PERSON_CLASS])
       if results and len(results[0].boxes) > 0:
         person_found = True
@@ -84,7 +65,7 @@ def process_video(video_path: Path):
   cap.release()
   return person_found
 
-def main_loop():
+def MainInfLoop():
   processed = set()  # avoid re-processing files
   while True:
     for mp4 in INCOMING_DIR.glob("*.mp4"):
@@ -93,7 +74,8 @@ def main_loop():
 
       # check file size stability here before processing
       print(f"[+] Checking {mp4.name}...", flush=True)
-      if process_video(mp4):
+
+      if ProcessVideo(mp4):
         target = GOOD_DIR / mp4.name
         print("    → person detected, moving to good/", flush=True)
       else:
@@ -107,8 +89,5 @@ def main_loop():
 
 if __name__ == "__main__":
   print("Starting person object detection...")
-  main_loop()
-
-
-
+  MainInfLoop()
 
