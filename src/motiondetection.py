@@ -72,8 +72,8 @@ def save_clip(filename, before_buffer, after_buffer):
 def record_clip(cap, filename, frame_buffer):
     after_buffer = deque(maxlen=(FPS * VIDEO_AFTER))
     before_buffer = deque(frame_buffer)
-
-    while len(after_buffer) < FPS * VIDEO_AFTER :
+    start = time.time()
+    while time.time() - start < 20:
         ret, frame = cap.read()
         if not ret:
             break
