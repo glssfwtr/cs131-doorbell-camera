@@ -2,6 +2,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 import os
+import time
 from datetime import datetime
 import smtplib
 from email.mime.text import MIMEText
@@ -12,6 +13,10 @@ SERVICE_ACCOUNT_FILE = 'smart-doorbell.json'
 
 # Google Drive Folder ID
 FOLDER_ID = '12B-dUbqpAJavA29yJSD7ZWeNTMaibwlt'
+
+# Prevent duplicates from uploading
+VIDEO_FOLDER = '/home/immortal/good'
+UPLOADED_LOG = 'uploaded.log'
 
 # Auth scopes
 SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -54,7 +59,7 @@ def upload_video(file_path):
 
     file_name = os.path.basename(file_path)
     file_metadata = {'name': file_name, 'parents': [FOLDER_ID]}
-    media = MediaFileUpload(file_path, mimetype='video/x-msvideo')
+    media = MediaFileUpload(file_path, mimetype='video/mp4')
 
     uploaded_file = service.files().create(
         body=file_metadata,
@@ -71,9 +76,31 @@ def upload_video(file_path):
         body=f"A new video '{file_name}' was uploaded.\nView it here:\n{file_link}"
     )
 
+# Creates an uploaded file set to prevent adding the same videos
+def load_uploaded():
+    if not os.path.exists(UPLOADED_LOG):
+        return set()
+    with open(UPLOADED_LOG, 'r') as f:
+        return set(line.strip() for line in f)
+
+# Marks a file
+def mark_uploaded(file_name):
+    with open(UPLOADED_LOG, 'a') as f:
+        f.write(file_name + '\n')
+
+# Constantly watches for a new file to upload every 5 seconds
+def watch_and_upload():
+    print(f"Watching folder: {VIDEO_FOLDER}")
+    uploaded = load_uploaded()
+
+    while True:
+        for file in os.listdir(VIDEO_FOLDER):
+            if file.endswith('.mp4') and file not in uploaded:
+                full_path = os.path.join(VIDEO_FOLDER, file)
+                upload_video(full_path)
+                uploaded.add(file)
+                mark_uploaded(file)
+        time.sleep(5)  # check every 5 seconds
 
 if __name__ == '__main__':
-    # Edit this line if you want to test another clip
-    video_file = 'clips/motion_20250517_154955.avi'
-    upload_video(video_file)
-
+    watch_and_upload()
