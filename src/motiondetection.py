@@ -50,6 +50,7 @@ def send_clip_zmq(filepath):
     with open(filepath, "rb") as f:
         encoded = base64.b64encode(f.read())    # base64 encoding -> safer transmission
         socket.send_multipart([filepath.encode(), encoded])
+        filepath += "~/" + filepath
         print(f"Sent clip {os.path.basename(filepath)} to Raspberry Pi")
 
 
