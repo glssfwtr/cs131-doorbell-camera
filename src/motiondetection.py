@@ -29,7 +29,7 @@ VIDEO_AFTER = 20   # seconds of video after motion
 LOCAL_CLIP_PATH = 'clips'
 FRAME_WIDTH = 1280
 FRAME_HEIGHT = 720
-FPS = 20
+FPS = 24
 MOTION_THRESHOLD = 5000  # number of changed pixels to trigger motion
 MAX_FRAMES = VIDEO_BUFFER * FPS
 
@@ -73,14 +73,13 @@ def record_clip(cap, filename, frame_buffer):
     after_buffer = deque(maxlen=(FPS * VIDEO_AFTER))
     before_buffer = deque(frame_buffer)
     start = time.time()
-    while time.time() - start < 20:
+    while len(after_buffer) < FPS * VIDEO_AFTER :
         ret, frame = cap.read()
         if not ret:
             break
-        frame_buffer.append(frame)
         after_buffer.append(frame)
 
-    save_clip(filename,list(before_buffer),list(after_buffer))
+    save_clip(filename,before_buffer,after_buffer)
 
 
 
