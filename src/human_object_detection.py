@@ -1,6 +1,5 @@
 # source .venv/bin/activate
 
-#!/usr/bin/env python3
 import cv2
 import os
 import shutil
