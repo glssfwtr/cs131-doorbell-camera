@@ -19,7 +19,7 @@ from collections import deque
 from multiprocessing import Process
 import threading
 
-# import zmq
+import zmq
 import base64
 
 
@@ -37,9 +37,9 @@ RASPBERRY_PI_IP = '100.75.45.21'
 PORT = 5555
 
 # ZeroMQ PUSH Socket
-# context = zmq.Context()
-# socket = context.socket(zmq.PUSH)
-# socket.connect(f"tcp://{RASPBERRY_PI_IP}:{PORT}")
+context = zmq.Context()
+socket = context.socket(zmq.PUSH)
+socket.connect(f"tcp://{RASPBERRY_PI_IP}:{PORT}")
 
 frame_buffer = deque(maxlen=MAX_FRAMES)
 
@@ -120,7 +120,7 @@ def main():
             filename = os.path.join(LOCAL_CLIP_PATH, f"motion_{timestamp}.mp4")
             print(f"[{timestamp}] Motion detected! Recording to {filename}")
             record_clip(cap, filename, frame_buffer)
-            # send_clip_zmq(filename)
+            send_clip_zmq(filename)
 
         prev_frame = gray
 
