@@ -1,4 +1,5 @@
 __pycache__/
+../yolov5/
 .DS_Store
 .env
 .venv/
@@ -10,9 +11,12 @@ __pycache__/
 *.py[cod]
 *.pyo
 *.so
+/yolov5/
 build/
 dist/
 env/
 ENV/
+model=/
 Thumbs.db
 venv/
+yolov5n.pt
