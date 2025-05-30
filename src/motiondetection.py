@@ -29,7 +29,7 @@ VIDEO_AFTER = 20   # seconds of video after motion
 LOCAL_CLIP_PATH = 'clips'
 FRAME_WIDTH = 1280
 FRAME_HEIGHT = 720
-FPS = 15
+FPS = 20
 MOTION_THRESHOLD = 5000  # number of changed pixels to trigger motion
 MAX_FRAMES = VIDEO_BUFFER * FPS
 
@@ -55,6 +55,9 @@ def send_clip_zmq(filepath):
 
 def save_clip(filename, before_buffer, after_buffer):
 
+    print(f"before: {len(before_buffer)}")
+    print(f"after: {len(after_buffer)}")
+
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(filename, fourcc, FPS, (FRAME_WIDTH, FRAME_HEIGHT))
     
@@ -68,7 +71,6 @@ def save_clip(filename, before_buffer, after_buffer):
 
 def record_clip(cap, filename, frame_buffer):
     after_buffer = deque(maxlen=(FPS * VIDEO_AFTER))
-    start_time = time.time()
     before_buffer = deque(frame_buffer)
 
     while len(after_buffer) < FPS * VIDEO_AFTER :
@@ -120,7 +122,7 @@ def main():
             filename = os.path.join(LOCAL_CLIP_PATH, f"motion_{timestamp}.mp4")
             print(f"[{timestamp}] Motion detected! Recording to {filename}")
             record_clip(cap, filename, frame_buffer)
-            send_clip_zmq(filename)
+            # send_clip_zmq(filename)
 
         prev_frame = gray
 
