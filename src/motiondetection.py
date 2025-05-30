@@ -19,13 +19,13 @@ from collections import deque
 from multiprocessing import Process
 import threading
 
-import zmq
+# import zmq
 import base64
 
 
 # Configuration
 VIDEO_BUFFER = 10  # seconds of video before motion
-VIDEO_AFTER = 20   # seconds of video after motion
+VIDEO_AFTER =  10  # seconds of video after motion
 LOCAL_CLIP_PATH = 'clips'
 FRAME_WIDTH = 1280
 FRAME_HEIGHT = 720
@@ -37,9 +37,9 @@ RASPBERRY_PI_IP = '100.75.45.21'
 PORT = 5555
 
 # ZeroMQ PUSH Socket
-context = zmq.Context()
-socket = context.socket(zmq.PUSH)
-socket.connect(f"tcp://{RASPBERRY_PI_IP}:{PORT}")
+# context = zmq.Context()
+# socket = context.socket(zmq.PUSH)
+# socket.connect(f"tcp://{RASPBERRY_PI_IP}:{PORT}")
 
 frame_buffer = deque(maxlen=MAX_FRAMES)
 
@@ -61,11 +61,9 @@ def save_clip(filename, before_buffer, after_buffer):
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(filename, fourcc, FPS, (FRAME_WIDTH, FRAME_HEIGHT))
     
-    for frame in before_buffer:
+    for frame in before_buffer + after_buffer:
         out.write(frame)
-    for frame in after_buffer:
-        out.write(frame)
-
+ 
     out.release()
 
 
