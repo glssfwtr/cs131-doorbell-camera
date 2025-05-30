@@ -19,6 +19,9 @@ from collections import deque
 from multiprocessing import Process
 import threading
 
+import zmq
+import base64
+
 
 # Configuration
 VIDEO_BUFFER = 10  # seconds of video before motion
@@ -30,10 +33,24 @@ FPS = 24
 MOTION_THRESHOLD = 5000  # number of changed pixels to trigger motion
 MAX_FRAMES = VIDEO_BUFFER * FPS
 
+RASPBERRY_PI_IP = '100.75.45.21'
+PORT = 5555
+
+# ZeroMQ PUSH Socket
+context = zmq.Context()
+socket = context.socket(zmq.PUSH)
+socket.connect(f"tcp://{RASPBERRY_PI_IP}:{PORT}")
+
 frame_buffer = deque(maxlen=MAX_FRAMES)
 
 
 os.makedirs(LOCAL_CLIP_PATH, exist_ok=True)
+
+def send_clip_zmq(filepath):
+    with open(filepath, "rb") as f:
+        encoded = base64.b64encode(f.read())    # base64 encoding -> safer transmission
+        socket.send_multipart([filepath.encode(), encoded])
+        print(f"Sent clip {os.path.basename(filepath)} to Raspberry Pi")
 
 
 def save_clip(filename, before_buffer, after_buffer):
@@ -47,8 +64,6 @@ def save_clip(filename, before_buffer, after_buffer):
         out.write(frame)
 
     out.release()
-
-
 
 
 def record_clip(cap, filename, frame_buffer):
@@ -105,6 +120,7 @@ def main():
             filename = os.path.join(LOCAL_CLIP_PATH, f"motion_{timestamp}.mp4")
             print(f"[{timestamp}] Motion detected! Recording to {filename}")
             record_clip(cap, filename, frame_buffer)
+            send_clip_zmq(filename)
 
         prev_frame = gray
 
