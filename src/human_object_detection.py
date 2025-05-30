@@ -1,5 +1,6 @@
 # source .venv/bin/activate
 
+#!/usr/bin/env python3
 import cv2
 import os
 import shutil
@@ -104,4 +105,3 @@ def MainInfLoop():
 if __name__ == "__main__":
   print("Starting person object detection...")
   MainInfLoop()
-
