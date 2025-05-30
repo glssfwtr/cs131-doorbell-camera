@@ -28,6 +28,6 @@ dist/
 env/
 ENV/
 model=/
+smart-doorbell.json
 Thumbs.db
 venv/
-smart-doorbell.json
