@@ -26,7 +26,7 @@ import base64
 # Configuration
 VIDEO_BUFFER = 10  # seconds of video before motion
 VIDEO_AFTER =  10  # seconds of video after motion
-LOCAL_CLIP_PATH = 'clips'
+LOCAL_CLIP_PATH = 'incoming'
 FRAME_WIDTH = 1280
 FRAME_HEIGHT = 720
 FPS = 24
