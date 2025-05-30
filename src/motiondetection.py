@@ -58,7 +58,7 @@ def save_clip(filename, before_buffer, after_buffer):
     print(f"before: {len(before_buffer)}")
     print(f"after: {len(after_buffer)}")
 
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(filename, fourcc, FPS, (FRAME_WIDTH, FRAME_HEIGHT))
     
     for frame in before_buffer + after_buffer:
@@ -117,7 +117,7 @@ def main():
 
         if motion_detected:
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = os.path.join(LOCAL_CLIP_PATH, f"motion_{timestamp}.avi")
+            filename = os.path.join(LOCAL_CLIP_PATH, f"motion_{timestamp}.mp4")
             print(f"[{timestamp}] Motion detected! Recording to {filename}")
             record_clip(cap, filename, frame_buffer)
             send_clip_zmq(filename)
