@@ -29,10 +29,13 @@ incoming_dir.mkdir(parents=True, exist_ok=True)
 INCOMING_DIR = Path(incoming_dir)
 GOOD_DIR = Path(good_dir)
 BAD_DIR = Path(bad_dir)
-MODEL_PATH = Path("~/yolov5/yolov5n.pt").expanduser()
+MODEL_PATH = Path("model=/home/immortal/yolov5/yolov5nu.pt").expanduser()
 PERSON_CLASS = 0 # COCO class ID for "person"
 CONF_THRESH = 0.5 # confidence threshold
-FRAME_SKIP = 4 # only run detection every n frames
+FRAME_SKIP = 5 # only run detection every n frames
+
+VIDEO_EXTENSIONS = ['*.avi', '*.flv', '*.mkv', '*.mov', '*.mp4', '*.wmv',]
+
 
 # ensure output dirs exist
 for d in (GOOD_DIR, BAD_DIR, INCOMING_DIR):
@@ -67,25 +70,37 @@ def ProcessVideo(video_path: Path):
 
 def MainInfLoop():
   processed = set()  # avoid re-processing files
+
   while True:
-    for mp4 in INCOMING_DIR.glob("*.mp4"):
-      if mp4.name in processed:
-        continue
+    # process all supported video formats
+    video_files = []
+    for extension in VIDEO_EXTENSIONS:
+      video_files.extend(INCOMING_DIR.glob(extension))
+
+    for video_file in video_files:
+      # # check for already processed
+      # # comment out since there could be files with same name during current runtime
+      # if video_file.name in processed:
+      #   continue
 
       # check file size stability here before processing
-      print(f"[+] Checking {mp4.name}...", flush=True)
+      print(f"[+] Checking {video_file.name}...", flush = True)
 
-      if ProcessVideo(mp4):
-        target = GOOD_DIR / mp4.name
-        print("    → person detected, moving to good/", flush=True)
+      if ProcessVideo(video_file):
+        target = GOOD_DIR / video_file.name
+        print("    -> person detected, moving to good/", flush=True)
       else:
-        target = BAD_DIR / mp4.name
-        print("    → No person, moving to bad/", flush=True)
+        target = BAD_DIR / video_file.name
+        print("    -> no person, moving to bad/", flush=True)
 
-      shutil.move(str(mp4), str(target))
-      processed.add(mp4.name)
 
-      time.sleep(2)  # poll interval
+      # processed.add(video_file.name)
+
+      # move instead of copy
+      shutil.move(str(video_file), str(target))
+
+    time.sleep(2)  # poll interval
+
 
 if __name__ == "__main__":
   print("Starting person object detection...")
