@@ -7,82 +7,104 @@ significant changes between consecutive frames. When motion is detected, the scr
 further action such as recording a short video clip and sending it to Jetson #2 for further 
 processing such as object detection.
 
-By using this approach we minimize the computational load on Jetson #1 by avoiding real time 
-AI inference and offloading heavy processing on Jetson #2 for object detection on smaller 
-video clips instead of an entire video stream
-
-Libraries:
-
-OpenCV (cv2)
-time (for timing)
-datetime (for timestamped filenames)
-os (for file system operations)
-paramiko (for secure file transfer)
-subprocess (for running scp commands)
-
-
 Authors: Angel Franco 
 Date: May 8th, 2025
-
 """
-
-#implementation coming soon
 
 import cv2
 import time
 import datetime
 import os
+from collections import deque
+from multiprocessing import Process
+import threading
+
 
 # Configuration
-VIDEO_DURATION = 5  # seconds to record after motion is detected
-FRAME_WIDTH = 640
-FRAME_HEIGHT = 480
-FPS = 20
+VIDEO_BUFFER = 10  # seconds of video before motion
+VIDEO_AFTER = 20   # seconds of video after motion
 LOCAL_CLIP_PATH = 'clips'
+FRAME_WIDTH = 1280
+FRAME_HEIGHT = 720
+FPS = 24
+MOTION_THRESHOLD = 5000  # number of changed pixels to trigger motion
+MAX_FRAMES = VIDEO_BUFFER * FPS
+
+frame_buffer = deque(maxlen=MAX_FRAMES)
+
 
 os.makedirs(LOCAL_CLIP_PATH, exist_ok=True)
 
-def record_clip(cap, filename):
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    out = cv2.VideoWriter(filename, fourcc, FPS, (FRAME_WIDTH, FRAME_HEIGHT))
 
+def save_clip(filename, before_buffer, after_buffer):
+
+    fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+    out = cv2.VideoWriter(filename, fourcc, FPS, (FRAME_WIDTH, FRAME_HEIGHT))
+    
+    for frame in before_buffer:
+        out.write(frame)
+    for frame in after_buffer:
+        out.write(frame)
+
+    out.release()
+
+
+
+
+def record_clip(cap, filename, frame_buffer):
+    after_buffer = deque(maxlen=FPS * VIDEO_AFTER)
     start_time = time.time()
-    while time.time() - start_time < VIDEO_DURATION:
+    before_buffer = deque(frame_buffer)
+
+    while time.time() - start_time < VIDEO_AFTER:
         ret, frame = cap.read()
         if not ret:
             break
-        out.write(frame)
-    out.release()
+        frame_buffer.append(frame)
+        after_buffer.append(frame)
+
+    save_clip(filename,list(before_buffer),list(after_buffer))
+
+
+
 
 def main():
     cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, FRAME_WIDTH)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT)
 
-    _, prev_frame = cap.read()
+    ret, prev_frame = cap.read()
+    if not ret:
+        print("Failed to read from camera.")
+        return
+
     prev_frame = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
     prev_frame = cv2.GaussianBlur(prev_frame, (21, 21), 0)
 
     print("Motion detection started...")
 
+
     while True:
         ret, frame = cap.read()
+
         if not ret:
             break
+        
+        frame_buffer.append(frame)
 
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         gray = cv2.GaussianBlur(gray, (21, 21), 0)
 
         delta = cv2.absdiff(prev_frame, gray)
         thresh = cv2.threshold(delta, 25, 255, cv2.THRESH_BINARY)[1]
-        motion_detected = cv2.countNonZero(thresh) > 5000
+        motion_detected = cv2.countNonZero(thresh) > MOTION_THRESHOLD
+
 
         if motion_detected:
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = os.path.join(LOCAL_CLIP_PATH, f"motion_{timestamp}.avi")
-            print(f"[{timestamp}] Motion detected! Saving to {filename}")
-            record_clip(cap, filename)
-            time.sleep(1)  # prevent immediate re-trigger
+            filename = os.path.join(LOCAL_CLIP_PATH, f"motion_{timestamp}.mp4")
+            print(f"[{timestamp}] Motion detected! Recording to {filename}")
+            record_clip(cap, filename, frame_buffer)
 
         prev_frame = gray
 
@@ -91,4 +113,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
