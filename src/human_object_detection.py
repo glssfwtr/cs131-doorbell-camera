@@ -29,7 +29,7 @@ GOOD_DIR = Path(good_dir)
 BAD_DIR = Path(bad_dir)
 MODEL_PATH = Path("model=/home/immortal/yolov5/yolov5nu.pt").expanduser()
 PERSON_CLASS = 0 # COCO class ID for "person"
-CONF_THRESH = 0.7 # confidence threshold
+CONF_THRESH = 0.8 # confidence threshold
 FRAME_SKIP = 7 # only run detection every n frames
 INPUT_SIZE = 416
 
